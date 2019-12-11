@@ -11,6 +11,7 @@ universes v u  -- declare the `v`'s first; see `category_theory.category` for an
 variables {C : Type u} [𝒞 : category.{v} C]
 include 𝒞
 
+
 class internal_category [category.{v} C] [limits.has_limits.{v} C] (obj_obj : C) : Type (max v u) :=
     (obj_arr          : C) 
     (i                : obj_obj ⟶ obj_arr)
@@ -126,7 +127,8 @@ lemma w_pullback.lift_snd {P X Y V W Z : C} {f1 : X ⟶ W} {g1 : Y ⟶ W} {f2 : 
     (@w_pullback.lift C _ P X Y V W Z f1 g1 f2 g2 _ h j k w1 w2) ≫ w_pullback.snd = k := begin simp, apply rfl end
 
 
-lemma comp_left_cong {a b : X ⟶ Y} {c : Y ⟶ Z} {eq : a = b} : a ≫ c = b ≫ c := congr_fun (congr_arg category_struct.comp eq) c
+lemma comp_left_cong {a b : X ⟶ Y} {c : Y ⟶ Z} {eq : a = b} : a ≫ c = b ≫ c := begin induction eq, refl end
+lemma comp_right_cong {a b : Y ⟶ Z} {c : X ⟶ Y} {eq : a = b} : c ≫ a = c ≫ b := begin induction eq, refl end
 
 
 abbreviation X₁ {X₀ C₀ : C} [limits.has_limits.{v} C] [iC : internal_category C₀] (j : X₀ ⟶ C₀) := w_pullback j iC.dom iC.cod j
@@ -154,8 +156,36 @@ abbreviation j₂ {X₀ C₀ : C} [limits.has_limits.{v} C] [iC : internal_categ
 abbreviation iX {X₀ C₀ : C} [limits.has_limits.{v} C] [iC : internal_category C₀] (j : X₀ ⟶ C₀) : X₀ ⟶ (X₁ j) := 
     w_pullback.lift (𝟙 X₀) (j ≫ iC.i) (𝟙 X₀) (by simp[iC.dom_i_id]) (by simp[iC.cod_i_id])
 
+abbreviation C₃ {C₀ : C} [limits.has_limits.{v} C] [iC : internal_category C₀] := pullback (@pullback.snd _ _ _ _ _ iC.cod iC.dom _) (@pullback.snd _ _ _ _ _ iC.cod iC.dom _)
 
-lemma lem_8_4 [has_lim : limits.has_limits.{v} C] {X₀ C₀ : C} [iC : internal_category C₀] (j : X₀ ⟶ C₀)
+abbreviation X₃ {X₀ C₀ : C} [limits.has_limits.{v} C] [iC : internal_category C₀] (j : X₀ ⟶ C₀) := pullback (πX₂ j) (πX₁ j)
+
+
+abbreviation compX {X₀ C₀ : C} [limits.has_limits.{v} C] [iC : internal_category C₀] (j : X₀ ⟶ C₀) : (X₂ j) ⟶ (X₁ j) := 
+    @w_pullback.lift _ _ _ _ _ _ _ _ j iC.dom iC.cod j _
+        (πX₁ j ≫ domX j)
+        ((j₂ j) ≫ iC.comp)
+        (πX₂ j ≫ codX j) 
+        (begin 
+            simp[w_pullback.condition1],
+            rw iC.dom_comp,
+            rw category.assoc_symm,
+            rw category.assoc_symm,
+            apply comp_left_cong,
+            rw (pullback.lift_fst iC.cod iC.dom (pullback.fst ≫ w_pullback.mid) (pullback.snd ≫ w_pullback.mid)),   
+        end)
+        (begin 
+            simp[w_pullback.condition2'],
+            rw iC.cod_comp,
+            rw category.assoc_symm,
+            rw category.assoc_symm,
+            apply comp_left_cong,
+            rw (pullback.lift_snd iC.cod iC.dom (pullback.fst ≫ w_pullback.mid) (pullback.snd ≫ w_pullback.mid))
+        end)
+
+
+
+lemma lem_7_4 [has_lim : limits.has_limits.{v} C] {X₀ C₀ : C} [iC : internal_category C₀] (j : X₀ ⟶ C₀)
     {T U : C} {f₁ f₂ : T ⟶ X₁ j} {f₁' f₂' : U ⟶ C₁} 
     {k : T ⟶ U} 
     (dom_cod_X : f₁ ≫ codX j = f₂ ≫ domX j)
@@ -183,7 +213,86 @@ begin
 end
 
 
-instance pulled_back_internal_category.internal_category [has_lim : limits.has_limits.{v} C] (obj_obj X : C) [iC : internal_category obj_obj] (j : X ⟶ obj_obj) :
+
+
+abbreviation complX {X₀ C₀ : C} [limits.has_limits.{v} C] [iC : internal_category C₀] (j : X₀ ⟶ C₀) : (X₃ j) ⟶ (X₂ j) := 
+    pullback.lift (pullback.fst ≫ compX j) (pullback.snd ≫ πX₂ j) 
+        (begin 
+            rw ← category.assoc_symm, 
+            rw w_pullback.lift_snd,
+            rw category.assoc_symm, 
+            simp [pullback.condition]
+        end)
+
+
+abbreviation comprX {X₀ C₀ : C} [limits.has_limits.{v} C] [iC : internal_category C₀] (j : X₀ ⟶ C₀) : (X₃ j) ⟶ (X₂ j) := 
+    pullback.lift (pullback.fst ≫ πX₁ j) (pullback.snd ≫ compX j) 
+        (begin 
+            symmetry,
+            rw ← category.assoc_symm, 
+            rw w_pullback.lift_fst, 
+            rw category.assoc_symm, 
+            rw ← pullback.condition,
+            rw ← category.assoc_symm, 
+            rw ← category.assoc_symm, 
+            apply comp_right_cong,
+            simp [pullback.condition]
+        end)
+
+
+-- (h : P ⟶ X) (j : P ⟶ Y) (k : P ⟶ V) (w1 : h ≫ f1 = j ≫ g1) (w2 : j ≫ f2 = k ≫ g2)
+
+lemma lem_7_6 [has_lim : limits.has_limits.{v} C] {X₀ C₀ : C} [iC : internal_category C₀] (j : X₀ ⟶ C₀) :
+    complX j ≫ compX j = comprX j ≫ compX j := begin
+        apply w_pullback_unique_morphism,
+        rw ← category.assoc_symm, 
+        rw w_pullback.lift_fst, 
+        rw category.assoc_symm,
+        rw pullback.lift_fst,
+        rw ← category.assoc_symm,
+        rw w_pullback.lift_fst, 
+        rw ← category.assoc_symm,
+        rw w_pullback.lift_fst, 
+        rw category.assoc_symm,
+        rw category.assoc_symm,
+        simp [pullback.lift_fst],
+        rw ← category.assoc_symm,
+        rw w_pullback.lift_mid,
+        rw ← category.assoc_symm,
+        rw w_pullback.lift_mid,
+        rw category.assoc_symm,
+        rw category.assoc_symm,
+        apply comp_left_cong,
+        transitivity pullback.lift (pullback.fst ≫ j₂ j) (pullback.snd ≫ j₂ j) _ ≫ _,
+        symmetry,
+        apply (@lem_7_4 _ _ _ _ _ _ j _ _ (pullback.fst ≫ compX j) (pullback.snd ≫ πX₂ j) (pullback.fst ≫ iC.comp) ((@pullback.snd _ _ _ _ _ pullback.snd pullback.fst _) ≫ @pullback.snd _ _ _ _ _ iC.cod iC.dom _)),
+        
+        rw ← category.assoc_symm,
+        rw iC.cod_comp,
+        rw ← category.assoc_symm,
+        rw ← pullback.condition,
+        rw category.assoc_symm,
+        simp[pullback.condition],
+
+        rw ← category.assoc_symm,
+        rw w_pullback.lift_mid,
+        rw category.assoc_symm,
+        rw category.assoc_symm,
+        apply comp_left_cong,
+        simp[pullback.lift_fst],
+
+        rw category.assoc_symm,
+        rw pullback.lift_snd,
+        rw ← category.assoc_symm,
+        rw ← category.assoc_symm,
+        rw pullback.lift_snd,
+
+
+    end
+
+
+
+def pulled_back_of_internal_category [has_lim : limits.has_limits.{v} C] (obj_obj X : C) [iC : internal_category obj_obj] (j : X ⟶ obj_obj) :
   internal_category X := { 
       obj_arr := X₁ j ,
       dom := domX j,
@@ -236,7 +345,7 @@ instance pulled_back_internal_category.internal_category [has_lim : limits.has_l
           transitivity (j₁ j ≫ pullback.lift (iC.dom ≫ iC.i) (𝟙 C₁) _) ≫ iC.comp,
           apply comp_left_cong,
           symmetry,
-          apply lem_8_4,
+          apply lem_7_4,
           rw ← category.assoc_symm,
           rw w_pullback.lift_mid,
           rw category.assoc_symm,
@@ -268,7 +377,7 @@ instance pulled_back_internal_category.internal_category [has_lim : limits.has_l
           transitivity (j₁ j ≫ pullback.lift (𝟙 C₁) (iC.cod ≫ iC.i) _) ≫ iC.comp,
           apply comp_left_cong,
           symmetry,
-          apply lem_8_4,
+          apply lem_7_4,
           simp,
           rw ← category.assoc_symm,
           rw w_pullback.lift_mid,
@@ -279,9 +388,6 @@ instance pulled_back_internal_category.internal_category [has_lim : limits.has_l
           rw ← category.assoc_symm,
           simp[iC.comp_cod_id]
        end,
-      comp_compl_compr := begin
-          apply w_pullback_unique_morphism,
-
-      end
+    comp_compl_compr := by apply (lem_7_6 j)
   }
 
