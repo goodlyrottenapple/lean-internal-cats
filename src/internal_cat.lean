@@ -240,11 +240,12 @@ abbreviation comprX {X₀ C₀ : C} [limits.has_limits.{v} C] [iC : internal_cat
         end)
 
 
--- (h : P ⟶ X) (j : P ⟶ Y) (k : P ⟶ V) (w1 : h ≫ f1 = j ≫ g1) (w2 : j ≫ f2 = k ≫ g2)
 
 lemma lem_7_6 [has_lim : limits.has_limits.{v} C] {X₀ C₀ : C} [iC : internal_category C₀] (j : X₀ ⟶ C₀) :
-    complX j ≫ compX j = comprX j ≫ compX j := begin
-        apply w_pullback_unique_morphism,
+    complX j ≫ compX j = comprX j ≫ compX j := 
+begin
+    apply w_pullback_unique_morphism,
+
         rw ← category.assoc_symm, 
         rw w_pullback.lift_fst, 
         rw category.assoc_symm,
@@ -256,39 +257,99 @@ lemma lem_7_6 [has_lim : limits.has_limits.{v} C] {X₀ C₀ : C} [iC : internal
         rw category.assoc_symm,
         rw category.assoc_symm,
         simp [pullback.lift_fst],
+
         rw ← category.assoc_symm,
         rw w_pullback.lift_mid,
         rw ← category.assoc_symm,
         rw w_pullback.lift_mid,
         rw category.assoc_symm,
         rw category.assoc_symm,
-        apply comp_left_cong,
-        transitivity pullback.lift (pullback.fst ≫ j₂ j) (pullback.snd ≫ j₂ j) _ ≫ _,
-        symmetry,
-        apply (@lem_7_4 _ _ _ _ _ _ j _ _ (pullback.fst ≫ compX j) (pullback.snd ≫ πX₂ j) (pullback.fst ≫ iC.comp) ((@pullback.snd _ _ _ _ _ pullback.snd pullback.fst _) ≫ @pullback.snd _ _ _ _ _ iC.cod iC.dom _)),
+            transitivity pullback.lift (pullback.fst ≫ j₂ j) (pullback.snd ≫ j₂ j) _ ≫ _ ≫ iC.comp,
+            rw category.assoc_symm,
+            apply comp_left_cong,
+            symmetry,
+            apply (@lem_7_4 _ _ _ _ _ _ j _ _ (pullback.fst ≫ compX j) (pullback.snd ≫ πX₂ j) (pullback.fst ≫ iC.comp) ((@pullback.snd _ _ _ _ _ pullback.snd pullback.fst _) ≫ @pullback.snd _ _ _ _ _ iC.cod iC.dom _)),
         
-        rw ← category.assoc_symm,
-        rw iC.cod_comp,
-        rw ← category.assoc_symm,
-        rw ← pullback.condition,
-        rw category.assoc_symm,
-        simp[pullback.condition],
+                rw ← category.assoc_symm,
+                rw iC.cod_comp,
+                rw ← category.assoc_symm,
+                rw ← pullback.condition,
+                rw category.assoc_symm,
+                simp[pullback.condition],
 
-        rw ← category.assoc_symm,
-        rw w_pullback.lift_mid,
-        rw category.assoc_symm,
-        rw category.assoc_symm,
-        apply comp_left_cong,
-        simp[pullback.lift_fst],
+                rw ← category.assoc_symm,
+                rw w_pullback.lift_mid,
+                rw category.assoc_symm,
+                rw category.assoc_symm,
+                apply comp_left_cong,
+                simp[pullback.lift_fst],
 
-        rw category.assoc_symm,
-        rw pullback.lift_snd,
-        rw ← category.assoc_symm,
-        rw ← category.assoc_symm,
-        rw pullback.lift_snd,
+                rw category.assoc_symm,
+                rw pullback.lift_snd,
+                rw ← category.assoc_symm,
+                rw ← category.assoc_symm,
+                rw pullback.lift_snd,
 
+                rw ← category.assoc_symm,
+                rw ← category.assoc_symm,
+                rw pullback.lift_snd,
+                rw pullback.lift_fst,
+                rw category.assoc_symm,
+                rw category.assoc_symm,
+                simp[pullback.condition],
 
-    end
+            symmetry,
+            transitivity (pullback.lift (pullback.fst ≫ j₂ j) (pullback.snd ≫ j₂ j) _ ≫ _) ≫ iC.comp,
+            apply comp_left_cong,
+            symmetry,
+            apply (@lem_7_4 _ _ _ _ _ _ j _ _ (pullback.fst ≫ πX₁ j) (pullback.snd ≫ compX j) ((@pullback.fst _ _ _ _ _ pullback.snd pullback.fst _) ≫ @pullback.fst _ _ _ _ _ iC.cod iC.dom _) (pullback.snd ≫ iC.comp) ),
+
+                rw ← category.assoc_symm,
+                rw ← category.assoc_symm,
+                rw iC.dom_comp,
+                rw pullback.condition,
+                rw category.assoc_symm,
+                simp[pullback.condition],
+
+                rw category.assoc_symm,
+                rw pullback.lift_fst,
+                rw ← category.assoc_symm,
+                rw ← category.assoc_symm,
+                apply comp_right_cong,
+                simp[pullback.lift_fst],
+
+                rw category.assoc_symm,
+                rw pullback.lift_snd,
+                rw ← category.assoc_symm,
+                rw ← category.assoc_symm,
+                rw w_pullback.lift_mid,
+
+                rw ← category.assoc_symm,
+                rw ← category.assoc_symm,
+                rw pullback.lift_snd,
+                rw pullback.lift_fst,
+                rw category.assoc_symm,
+                rw category.assoc_symm,
+                simp[pullback.condition],
+
+            rw ← category.assoc_symm,
+            apply comp_right_cong,
+            rw iC.comp_compl_compr,
+
+            rw ← category.assoc_symm, 
+            rw w_pullback.lift_snd,
+            rw category.assoc_symm,
+            rw pullback.lift_snd,
+            rw ← category.assoc_symm,
+            rw ← category.assoc_symm,
+            rw w_pullback.lift_snd, 
+            rw category.assoc_symm,
+            rw category.assoc_symm,
+            rw pullback.lift_snd, 
+            rw ← category.assoc_symm,
+            rw ← category.assoc_symm,
+            rw w_pullback.lift_snd
+end
 
 
 
